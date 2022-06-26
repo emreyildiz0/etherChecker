@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/662e7dda4ec44bdb835450446b67b443")) //TODO: Make the link config
 
-exports.validate = async function (req, res) {
+exports.balance = async function (req, res) {
     const {addressList} = req.body
 
     try {
@@ -29,7 +29,7 @@ exports.validate = async function (req, res) {
  * One line version if prefer
  */
 /*
-exports.validate = async function (req, res) {
+exports.balance = async function (req, res) {
     const {addressList} = req.body
 
     try {
