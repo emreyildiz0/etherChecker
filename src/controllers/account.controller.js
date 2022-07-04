@@ -10,7 +10,7 @@ exports.balance = async function (req, res) {
 
     try {
         const ethereumGet = await axios.get(link)
-        const usdValue = (quantity) => ethereumGet.data?.ethereum?.usd * quantity //TODO: add validation
+        const usdValue = (quantity) => ethereumGet.data?.ethereum?.usd * parseFloat(quantity)
 
         const getValue = async (address) => {
             if (!Web3.utils.isAddress(address)) {
@@ -20,22 +20,20 @@ exports.balance = async function (req, res) {
             return web3.utils.fromWei(balance, "ether")
         }
 
-        const promises = addressList.map((address) => getValue(address))
+        const mapArray = addressList.map(async (address) => {
+            let obj = {}
+            let ether = await getValue(address)
+            let usd = usdValue(ether)
+            obj[address] = {
+                "ether": ether,
+                "usd" : usd
+            }
+            if (usd) return obj
+        })
+        let promises = await Promise.all(mapArray)
+        let filtered = promises.filter(f => f !== undefined)
 
-        const response = await Promise.all(promises)
-
-        let responseData = []
-        for (let i in addressList) {
-                let obj = {}
-                let address = addressList[i];
-                obj[address] = {
-                    "ether": response[i],
-                    "usd" : usdValue(parseFloat(response[i]))
-                }
-                if (usdValue(parseFloat(response[i]))) responseData.push(obj)
-        }
-
-        return res.status(200).send(responseData)
+        return res.status(200).send(filtered)
     } catch (e) {
         return res.status(404).send({
             err: "Not found"
